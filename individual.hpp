@@ -4,7 +4,14 @@
 namespace xdu_ai {
 
 using my_size_type = decltype(std::bitset<1>().size());
+/**
+ * @brief represent a closed-range, [a, b]
+ */
+using range_type = std::pair<double, double>;
+
+template <my_size_type N> using range_array = std::array<range_type, N>;
 template <my_size_type N> using chromosome = std::bitset<N>;
+
 /**
  * @brief count how many bit is needed to encode a range
  *        [a, b] with specific precision.
@@ -13,6 +20,13 @@ template <my_size_type N> using chromosome = std::bitset<N>;
  */
 inline MY_CONSTEXPR my_size_type bitcount(double a, double b,
                                           double precision) {
+  double ra = std::ceil((b - a) / precision);
+  LOG_DEBUG("%lf", ra);
+  my_size_type r = std::ceil(std::log2(ra));
+  return r;
+}
+inline MY_CONSTEXPR my_size_type bitcount(range_type ran, double precision) {
+  double a = ran.first, b = ran.second;
   double ra = std::ceil((b - a) / precision);
   LOG_DEBUG("%lf", ra);
   my_size_type r = std::ceil(std::log2(ra));
@@ -40,11 +54,6 @@ template <my_size_type N> inline chromosome<N> random_chromosome() {
   }
   return bs;
 }
-/**
- * @brief represent a closed-range, [a, b]
- */
-using range_type = std::pair<const double, const double>;
-
 /**
  * @brief a chromosome class, represent multiple bitsets (which correspond to
  * multiple free-varialblesm)
@@ -147,6 +156,7 @@ public:
     cache_valid_ = false;
     mutate_helper<seg_cnt - 1>();
   }
+
   friend std::ostream &operator<<(std::ostream &os, const individual &ind) {
     os << "part1: " << std::get<0>(ind.datas_)
        << "\npart2: " << std::get<1>(ind.datas_) << "\n";
@@ -166,7 +176,7 @@ public:
  * @param arr a result come from `chromosome::decode`.
  */
 template <my_size_type N>
-inline void println(const std::array<double, N> &arr) {
+inline void print_double_array(const std::array<double, N> &arr) {
   std::cout << "(";
   for (int i = 0; i < N; i++) {
     if (i != 0) {
